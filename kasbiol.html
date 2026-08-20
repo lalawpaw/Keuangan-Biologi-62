@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sistem Keuangan Biologi 62</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+
+<style>
+/* --- SETUP CSS --- */
+:root {
+  --primary: #4f46e5; --primary-glow: rgba(79, 70, 229, 0.4); --secondary: #0ea5e9;
+  --bg-light: #f3f4f6; --card-light: rgba(255, 255, 255, 0.7);
+  --text-dark: #1e293b; --text-gray: #64748b; --border-light: rgba(255, 255, 255, 0.6);
+  --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+  --success: #10b981; --warning: #f59e0b; --danger: #ef4444; --wa-color: #25D366;
+}
+[data-theme="dark"] {
+  --bg-light: #0f172a; --card-light: rgba(30, 41, 59, 0.7);
+  --text-dark: #f8fafc; --text-gray: #94a3b8; --border-light: rgba(255, 255, 255, 0.1);
+}
+* { box-sizing: border-box; transition: all 0.3s ease; }
+body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg-light); color: var(--text-dark); margin: 0; padding: 0; min-height: 100vh; background-image: radial-gradient(at 0% 0%, rgba(79, 70, 229, 0.15) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(14, 165, 233, 0.15) 0px, transparent 50%); background-attachment: fixed; }
+
+/* LAYOUT */
+.app-container { max-width: 1000px; margin: 0 auto; padding: 2rem 1rem; }
+header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border-light); }
+
+/* --- PERBAIKAN: Efek Teks Berkilau --- */
+.brand h1 { 
+    margin: 0; 
+    font-size: 1.5rem; 
+    font-weight: 800; 
+    
+    /* Ganti #ffffff menjadi rgba(255, 255, 255, 0.5) untuk menurunkan opacity-nya */
+    background: linear-gradient(-60deg, var(--primary) 35%, var(--secondary) 45%, rgba(255, 255, 255, 0.4) 50%, var(--secondary) 55%, var(--primary) 65%);
+    
+    background-size: 300% auto; 
+    -webkit-background-clip: text; 
+    -webkit-text-fill-color: transparent; 
+    animation: shineText 7s linear infinite; 
+}
+
+@keyframes shineText {
+    0% { background-position: 200% center; }
+    100% { background-position: -100% center; }
+}
+
+.theme-toggle { background: var(--card-light); border: 1px solid var(--border-light); color: var(--text-dark); padding: 0.5rem; border-radius: 50%; width: 40px; height: 40px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+
+/* TABS */
+.nav-tabs { display: flex; gap: 10px; margin-bottom: 2rem; background: var(--card-light); padding: 8px; border-radius: 12px; border: 1px solid var(--border-light); backdrop-filter: blur(12px); overflow-x: auto; }
+.tab-btn { flex: 1; background: transparent; border: none; color: var(--text-gray); font-weight: 600; padding: 12px 15px; border-radius: 8px; cursor: pointer; transition: all 0.3s; white-space: nowrap; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.9rem; }
+.tab-btn:hover { background: rgba(79, 70, 229, 0.1); color: var(--primary); }
+.tab-btn.active { background: var(--primary); color: white; box-shadow: 0 4px 15px var(--primary-glow); }
+.tab-content { display: none; animation: slideUp 0.4s ease-out forwards; opacity: 0; transform: translateY(15px); }
+.tab-content.active { display: block; }
+@keyframes slideUp { to { opacity: 1; transform: translateY(0); } }
+
+/* CARDS & STATS */
+.glass-card { background: var(--card-light); backdrop-filter: blur(12px); border: 1px solid var(--border-light); border-radius: 16px; box-shadow: var(--glass-shadow); padding: 1.5rem; margin-bottom: 1.5rem; }
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; }
+.stat-box { background: rgba(255, 255, 255, 0.5); border-radius: 12px; padding: 1.25rem; border: 1px solid var(--border-light); display: flex; align-items: center; gap: 1rem; margin-bottom: 0; }
+[data-theme="dark"] .stat-box { background: rgba(30, 41, 59, 0.5); }
+.stat-icon { width: 48px; height: 48px; border-radius: 12px; background: var(--primary-glow); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0; }
+.stat-info h4 { margin: 0; font-size: 0.85rem; color: var(--text-gray); font-weight: 500; }
+.stat-info span { font-size: 1.25rem; font-weight: 700; color: var(--text-dark); }
+
+/* ACCORDION */
+.accordion-item { padding: 1.25rem 1.5rem; }
+.accordion-header { display: flex; justify-content: space-between; align-items: center; cursor: pointer; user-select: none; }
+.accordion-header:hover h3 { color: var(--primary); }
+.accordion-header h3 { margin: 0; font-size: 1.1rem; color: var(--text-dark); transition: color 0.3s; display: flex; align-items: center; gap: 10px; }
+.accordion-icon { font-size: 1.2rem; color: var(--text-gray); transition: transform 0.4s; }
+.accordion-header.active .accordion-icon { transform: rotate(180deg); color: var(--primary); }
+.accordion-content { max-height: 0; overflow: hidden; opacity: 0; transition: max-height 0.5s ease-in-out, opacity 0.4s, margin-top 0.4s; }
+.accordion-content.open { opacity: 1; margin-top: 1.5rem; overflow: visible; } 
+
+/* EFEK HARTA KARUN */
+.treasure-section { text-align: center; border: 2px dashed var(--warning); padding: 2.5rem 1rem 1rem 1rem; border-radius: 16px; cursor: pointer; transition: transform 0.3s, background 0.3s; margin-bottom: 1.5rem; position: relative; overflow: visible; }
+[data-theme="dark"] .treasure-section { background: rgba(30, 41, 59, 0.5); }
+.treasure-section:hover { transform: scale(1.02); background: rgba(245, 158, 11, 0.1); }
+
+/* --- PERBAIKAN: Animasi Peti Natural --- */
+.chest-img { 
+    width: 140px; 
+    height: auto; 
+    position: relative; 
+    z-index: 5; 
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    animation: floatChest 4s ease-in-out infinite; 
+    filter: drop-shadow(0 15px 15px rgba(0, 0, 0, 0.15)); 
+}
+@keyframes floatChest {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); filter: drop-shadow(0 25px 15px rgba(0, 0, 0, 0.08)); }
+}
+.treasure-section:active .chest-img { 
+    transform: scale(0.9) translateY(5px); 
+    transition: transform 0.1s;
+}
+
+/* --- PERBAIKAN: Gaya Angka Saldo Bouncy & Modern --- */
+.treasure-amount { 
+    font-size: 2.2rem; 
+    font-weight: 800; 
+    color: var(--success); 
+    background: var(--card-light);
+    backdrop-filter: blur(10px);
+    padding: 10px 25px; 
+    border-radius: 20px; 
+    box-shadow: 0 10px 25px rgba(16, 185, 129, 0.25), 0 4px 10px rgba(0,0,0,0.05); 
+    border: 2px solid rgba(16, 185, 129, 0.4); 
+    position: absolute; 
+    top: 40%; 
+    left: 50%; 
+    transform: translate(-50%, 0) scale(0.5); 
+    opacity: 0; 
+    transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); 
+    z-index: 10; 
+    white-space: nowrap; 
+}
+.treasure-amount.show { 
+    transform: translate(-50%, -110px) scale(1); 
+    opacity: 1; 
+}
+
+#particlesContainer { position: absolute; width: 100%; height: 100%; top: 0; left: 0; overflow: visible; pointer-events: none; }
+.money-particle { position: absolute; font-size: 1.8rem; left: 50%; bottom: 40%; opacity: 0; z-index: 4; pointer-events: none; animation: popMoney 1s ease-out forwards; }
+@keyframes popMoney {
+    0% { transform: translate(-50%, 0) scale(0.5); opacity: 1; }
+    100% { transform: translate(var(--tx), var(--ty)) scale(1.2) rotate(var(--rot)); opacity: 0; }
+}
+
+/* OTHERS */
+.payment-grid { display: grid; grid-template-columns: 1fr 1.5fr; gap: 1.5rem; }
+@media(max-width: 768px) { .payment-grid { grid-template-columns: 1fr; } .nav-tabs { flex-direction: column; } .tab-btn { justify-content: flex-start; } }
+.pay-link-btn { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 10px; border-radius: 10px; text-decoration: none; font-weight: 600; color: white; border: none; cursor: pointer; }
+.btn-primary { background: linear-gradient(135deg, var(--primary), #4338ca); color: white; font-weight: 600; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.8rem 1rem; border-radius: 10px; width: 100%; }
+.input-group { margin-bottom: 1rem; position: relative; }
+label { display: block; margin-bottom: 0.5rem; font-weight: 600; font-size: 0.9rem; }
+input, select { width: 100%; padding: 0.8rem 1rem; border-radius: 10px; border: 1px solid var(--border-light); background: rgba(255, 255, 255, 0.8); color: var(--text-dark); outline: none; }
+[data-theme="dark"] input, [data-theme="dark"] select { background: rgba(15, 23, 42, 0.6); }
+.suggestion-box { position: absolute; top: 100%; left: 0; width: 100%; background: var(--card-light); border: 1px solid var(--border-light); border-radius: 0 0 10px 10px; max-height: 200px; overflow-y: auto; z-index: 1000; display: none; backdrop-filter: blur(20px); box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+.suggestion-item { padding: 10px 15px; cursor: pointer; border-bottom: 1px solid var(--border-light); }
+.suggestion-item:hover { background: var(--primary-glow); color: var(--primary); }
+.table-container { overflow-x: auto; border-radius: 12px; }
+table { width: 100%; border-collapse: collapse; }
+th, td { padding: 1rem; text-align: left; border-bottom: 1px solid var(--border-light); }
+th { background: rgba(var(--primary), 0.05); font-weight: 600; color: var(--text-gray); font-size: 0.85rem; text-transform: uppercase; }
+.badge { padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
+.badge-success { background: rgba(16, 185, 129, 0.15); color: var(--success); }
+.badge-warning { background: rgba(245, 158, 11, 0.15); color: var(--warning); }
+.badge-danger { background: rgba(239, 68, 68, 0.15); color: var(--danger); }
+.badge-denda { background: rgba(239, 68, 68, 0.8); color: white; margin-top: 5px; display: inline-block; font-size: 0.7rem; }
+.btn-wa-group { background: var(--wa-color); color: white; border: none; padding: 0.6rem 1rem; border-radius: 8px; font-size: 0.9rem; cursor: pointer; text-decoration: none; display: flex; align-items: center; gap: 8px; font-weight: 600; margin-left: auto; }
+.modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.8); backdrop-filter: blur(5px); align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s; }
+.modal.show { display: flex; opacity: 1; }
+.modal-content { max-width: 90%; max-height: 90%; border-radius: 8px; }
+.close-modal { position: absolute; top: 20px; right: 30px; color: white; font-size: 40px; cursor: pointer; }
+.toast { position: fixed; bottom: 20px; right: 20px; background: var(--text-dark); color: var(--bg-light); padding: 1rem 1.5rem; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); transform: translateY(100px); opacity: 0; transition: all 0.4s; z-index: 999; }
+.toast.show { transform: translateY(0); opacity: 1; }
+.toast.error { background: var(--danger); color: white; }
+.progress-track { height: 10px; background: var(--border-light); border-radius: 5px; overflow: hidden; margin-top: 1rem;}
+.progress-fill { height: 100%; background: linear-gradient(90deg, var(--success), #34d399); width: 0%; transition: width 1s ease; }
+.btn-action { padding: 5px 10px; border-radius: 5px; border: none; cursor: pointer; font-size: 0.8rem; font-weight: bold; margin-right: 5px; color: white; }
+.btn-accept { background: var(--success); }
+.btn-reject { background: var(--danger); }
+.custom-modal-box { background: var(--card-light); padding: 2rem; border-radius: 16px; width: 90%; max-width: 400px; position: relative; border: 1px solid var(--border-light); backdrop-filter: blur(15px); }
+</style>
+</head>
+<body>
+
+<div class="app-container">
+  <header>
+    <div class="brand">
+      <h1><i class="fa-solid fa-wallet"></i> Kas Biologi 62</h1>
+      <small style="color:var(--text-gray)">Manajemen Keuangan Transparan</small>
+    </div>
+    
+    <div style="display:flex; gap:10px;">
+        <button class="theme-toggle" onclick="adminLoginPrompt()" title="Login Admin">
+            <i class="fa-solid fa-lock" id="adminIcon"></i>
+        </button>
+        <button class="theme-toggle" onclick="toggleTheme()">
+            <i class="fa-solid fa-moon"></i>
+        </button>
+    </div>
+  </header>
+
+  <nav class="nav-tabs">
+    <button class="tab-btn active" onclick="switchTab('tab-dashboard', this)"><i class="fa-solid fa-chart-pie"></i> Dashboard</button>
+    <button class="tab-btn" onclick="switchTab('tab-bayar', this)"><i class="fa-solid fa-money-bill-transfer"></i> Bayar Kas</button>
+    <button class="tab-btn" onclick="switchTab('tab-data', this)"><i class="fa-solid fa-table-list"></i> Data</button>
+    <button class="tab-btn" onclick="switchTab('tab-kontak', this)"><i class="fa-solid fa-address-book"></i> Kontak</button>
+  </nav>
+
+  <div id="tab-dashboard" class="tab-content active">
+      
+      <div id="treasure-section" class="glass-card treasure-section" onclick="toggleTreasure()">
+        <div id="treasureAmount" class="treasure-amount"><span id="saldoValue">Rp 0</span></div>
+        <div id="particlesContainer"></div>
+        <img id="chestImg" src="peti/peti_1.png" alt="Peti Harta Tertutup" class="chest-img">
+        <h4 style="margin: 10px 0 5px 0; color: var(--text-dark);">Total Kas Saat Ini</h4>
+        <p id="chestHint" style="font-size: 0.8rem; color: var(--warning); margin: 0;">Klik untuk membuka peti!</p>
+      </div>
+
+      <div class="glass-card accordion-item">
+          <div class="accordion-header" onclick="toggleAccordion(this)">
+              <h3><i class="fa-solid fa-earth-asia" style="color:var(--primary)"></i> Pemasukan & Pengeluaran (Semua Bulan)</h3>
+              <i class="fa-solid fa-chevron-down accordion-icon"></i>
+          </div>
+          <div class="accordion-content">
+              <div class="stats-grid">
+                <div class="stat-box">
+                  <div class="stat-icon" style="background: rgba(14, 165, 233, 0.2); color: var(--secondary);"><i class="fa-solid fa-arrow-trend-up"></i></div>
+                  <div class="stat-info"><h4>Total Pemasukan</h4><span id="totalPemasukanValue">Rp 0</span></div>
+                </div>
+                <div class="stat-box">
+                  <div class="stat-icon" style="background: rgba(239,68,68,0.2); color: var(--danger)"><i class="fa-solid fa-arrow-trend-down"></i></div>
+                  <div class="stat-info"><h4>Total Pengeluaran</h4><span id="totalPengeluaranValue">Rp 0</span></div>
+                </div>
+              </div>
+          </div>
+      </div>
+
+      <div class="glass-card accordion-item">
+          <div class="accordion-header" onclick="toggleAccordion(this)">
+              <h3><i class="fa-solid fa-receipt" style="color:var(--danger)"></i> Riwayat Pengeluaran Angkatan</h3>
+              <i class="fa-solid fa-chevron-down accordion-icon"></i>
+          </div>
+          <div class="accordion-content">
+              <div style="display:flex; justify-content:flex-end; margin-bottom: 1rem;">
+                  <button id="btnTambahPengeluaran" class="btn-primary" style="width: auto; padding: 0.4rem 0.8rem; font-size: 0.8rem; display: none;" onclick="bukaModalPengeluaran()">
+                      <i class="fa-solid fa-plus"></i> Tambah Pengeluaran
+                  </button>
+              </div>
+              <div class="table-container">
+                <table>
+                  <thead><tr><th>Tanggal</th><th>Keterangan</th><th>Nominal</th></tr></thead>
+                  <tbody id="tabelPengeluaranBody"></tbody>
+                </table>
+              </div>
+          </div>
+      </div>
+
+      <div class="glass-card accordion-item">
+          <div class="accordion-header active" onclick="toggleAccordion(this)">
+              <h3><i class="fa-regular fa-calendar-check" style="color:var(--success)"></i> Statistik Bulan:&nbsp;<span id="dashboardMonthDisplay" style="color:var(--primary); font-weight:bold;"></span></h3>
+              <i class="fa-solid fa-chevron-down accordion-icon"></i>
+          </div>
+          <div class="accordion-content open" style="max-height: 1000px; opacity: 1; margin-top: 1.5rem;">
+              <div class="stats-grid" style="margin-bottom: 1.5rem;">
+                <div class="stat-box">
+                  <div class="stat-icon"><i class="fa-solid fa-coins"></i></div>
+                  <div class="stat-info"><h4>Kas Terkumpul</h4><span id="totalKasBulanIni">Rp 0</span></div>
+                </div>
+                <div class="stat-box">
+                  <div class="stat-icon" style="background: rgba(239,68,68,0.2); color: var(--danger)"><i class="fa-solid fa-user-xmark"></i></div>
+                  <div class="stat-info"><h4>Belum Bayar</h4><span id="unpaidCount">0</span></div>
+                </div>
+                <div class="stat-box">
+                  <div class="stat-icon" style="background: rgba(245,158,11,0.2); color: var(--warning)"><i class="fa-solid fa-clock"></i></div>
+                  <div class="stat-info"><h4>Sisa Waktu</h4><span id="countdownTimer" style="font-size: 1rem;">Memuat...</span></div>
+                </div>
+              </div>
+              <div style="display:flex; justify-content:space-between; font-size:0.85rem; font-weight:bold;">
+                <span>Target Pengumpulan Bulan Ini</span><span id="progressText">0%</span>
+              </div>
+              <div class="progress-track"><div class="progress-fill" id="progressBar"></div></div>
+          </div>
+      </div>
+  </div>
+
+  <div id="tab-bayar" class="tab-content">
+      <div class="payment-grid">
+        <div class="glass-card" style="text-align:center;">
+          <h3 style="margin-top:0;"><i class="fa-solid fa-qrcode"></i> Scan QRIS</h3>
+          <p style="font-size:0.9rem; color:var(--text-gray); margin-bottom:1rem;">Scan pakai DANA, GoPay, Shopee, atau M-Banking apa saja.</p>
+          
+          <div class="qris-wrapper" style="display:block; margin-bottom:10px;">
+            <img src="Qris/qris_1.png" alt="QRIS Kas Biologi 62" class="qris-img" style="width:100%; max-width:250px; border-radius:12px; border: 2px solid var(--text-dark);">
+            <p style="margin-top:10px; font-weight:600; color:var(--primary); font-size:0.9rem;">a.n ALIFAH NISA NURJANAH</p>
+            
+            <a href="Qris/qris_1.png" download="QRIS kas bio" class="btn-primary" style="display: inline-flex; width: auto; font-size: 0.85rem; padding: 0.5rem 1rem; margin-top: 5px; text-decoration: none;">
+                <i class="fa-solid fa-download"></i> Simpan Gambar
+            </a>
+          </div>
+        </div>
+
+        <div class="glass-card">
+          <h3 style="margin-top:0; border-bottom:1px solid var(--border-light); padding-bottom:0.5rem;">Konfirmasi Bayar</h3>
+          <form id="paymentForm">
+            <div class="input-group">
+              <label>Bulan Pembayaran</label>
+              <select id="bulanSelectForm">
+                <option value="1">Januari</option><option value="2">Februari</option><option value="3">Maret</option>
+                <option value="4">April</option><option value="5">Mei</option><option value="6">Juni</option>
+                <option value="7">Juli</option><option value="8">Agustus</option><option value="9">September</option>
+                <option value="10">Oktober</option><option value="11">November</option><option value="12">Desember</option>
+              </select>
+            </div>
+            
+            <div class="input-group input-wrapper">
+              <label>NIM / Nama Mahasiswa</label>
+              <input type="text" id="nim" placeholder="Ketik NIM atau Nama..." autocomplete="off" required>
+              <div id="customSuggestions" class="suggestion-box"></div>
+              <small id="namaDisplay" style="color:var(--primary); font-weight:600; display:block; margin-top:5px;"></small>
+            </div>
+            
+            <div class="input-group">
+              <label>Metode</label>
+              <select id="metode" required>
+                <option value="">-- Pilih --</option>
+                <option value="Cash">Cash (Tunai)</option>
+                <option value="Transfer">Transfer / QRIS</option>
+              </select>
+            </div>
+            <div class="input-group" id="buktiContainer" style="display:none;">
+              <label>Upload Bukti</label>
+              <input type="file" id="bukti" accept="image/*">
+            </div>
+            <button type="submit" class="btn-primary pay-btn"><i class="fa-solid fa-paper-plane"></i> Kirim Konfirmasi</button>
+          </form>
+        </div>
+      </div>
+  </div>
+
+  <div id="tab-data" class="tab-content">
+      <div class="glass-card">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; flex-wrap: wrap; gap: 10px;">
+          <h3 style="margin:0;"><i class="fa-solid fa-users"></i> Status Pembayaran</h3>
+          
+          <div style="display:flex; gap:10px; margin-left: auto;">
+              <button onclick="tagihGrupWA()" class="btn-wa-group">
+                  <i class="fa-brands fa-whatsapp"></i> Tagih Grup
+              </button>
+              <select id="bulanSelectView" style="width:auto; padding:0.5rem; font-weight:bold;"></select>
+          </div>
+        </div>
+
+        <div style="display:flex; gap:0.5rem; margin-bottom:1rem; flex-wrap:wrap;">
+          <input type="text" id="searchBar" style="flex:1;" placeholder="Cari Nama atau NIM...">
+          <button class="btn-primary" onclick="exportToPDF()" style="width:auto; background:var(--danger);"><i class="fa-solid fa-file-pdf"></i> Unduh PDF</button>
+        </div>
+        
+        <div class="table-container">
+          <table id="kasTable">
+            <thead><tr><th>No</th><th>Nama / NIM</th><th>Status</th><th>Metode</th><th>Aksi</th></tr></thead>
+            <tbody id="tableBody"><tr><td colspan="5" style="text-align:center; padding: 2rem;">Memuat data...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+  </div>
+
+  <div id="tab-kontak" class="tab-content">
+      <div class="stats-grid">
+        <div class="glass-card stat-box" style="flex-direction: column; align-items: stretch; text-align: center; gap: 15px;">
+            <div style="display: flex; justify-content: center;">
+                <div class="stat-icon" style="width: 60px; height: 60px; font-size: 1.5rem;"><i class="fa-solid fa-user-tie"></i></div>
+            </div>
+            <div class="stat-info">
+                <h4>Bendahara 1</h4>
+                <span style="font-size: 1.2rem; display: block; margin: 5px 0;">Alifah Nisa Nurjanah</span>
+                <p style="font-size: 0.85rem; color: var(--text-gray); margin: 0;">Tanya-tanya soal kas atau konfirmasi bayar langsung ke sini yaa.</p>
+            </div>
+            <a href="https://wa.me/6288902069478" target="_blank" class="btn-wa-group" style="justify-content: center; margin-top: auto;">
+                <i class="fa-brands fa-whatsapp"></i> Chat WhatsApp
+            </a>
+        </div>
+
+        <div class="glass-card stat-box" style="flex-direction: column; align-items: stretch; text-align: center; gap: 15px;">
+            <div style="display: flex; justify-content: center;">
+                <div class="stat-icon" style="width: 60px; height: 60px; font-size: 1.5rem; background: rgba(14, 165, 233, 0.15); color: var(--secondary);"><i class="fa-solid fa-user"></i></div>
+            </div>
+            <div class="stat-info">
+                <h4>Bendahara 2</h4>
+                <span style="font-size: 1.2rem; display: block; margin: 5px 0;">Layla Parsa Anggarsari</span>
+                <p style="font-size: 0.85rem; color: var(--text-gray); margin: 0;">Alternatif kontak apabila bendahara 1 slow respon.</p>
+            </div>
+            <a href="https://wa.me/6281384540859" target="_blank" class="btn-wa-group" style="justify-content: center; margin-top: auto;">
+                <i class="fa-brands fa-whatsapp"></i> Chat WhatsApp
+            </a>
+        </div>
+      </div>
+  </div>
+
+</div>
+
+<div id="imageModal" class="modal" onclick="if(event.target===this)tutupModalGambar()"><span class="close-modal" onclick="tutupModalGambar()">&times;</span><img class="modal-content" id="img01"></div>
+
+<div id="modalFormPengeluaran" class="modal">
+    <div class="custom-modal-box">
+        <span class="close-modal" style="color:var(--text-dark); right: 20px; top: 15px;" onclick="tutupModalPengeluaran()">&times;</span>
+        <h3 style="margin-top:0; border-bottom:1px solid var(--border-light); padding-bottom: 0.5rem;">Catat Pengeluaran</h3>
+        <form id="formInputPengeluaran">
+            <div class="input-group"><label>Tanggal</label><input type="date" id="tglPengeluaran" required></div>
+            <div class="input-group"><label>Keterangan / Beli Apa</label><input type="text" id="ketPengeluaran" required></div>
+            <div class="input-group"><label>Nominal Harga (Rp)</label><input type="number" id="nomPengeluaran" min="500" required></div>
+            <button type="submit" class="btn-primary" style="margin-top: 1.5rem;"><i class="fa-solid fa-save"></i> Simpan Data</button>
+        </form>
+    </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+// --- KONFIGURASI ---
+const scriptURL = "https://script.google.com/macros/s/AKfycbwpuy20k4CbLe0LOu9f9DcbKww0oDk55luLnHH6TzUFqHONRxbAYaOGwcS0WKRTkEuG/exec"; 
+const dbMahasiswa = { "G3401251001": "Dafri Ardiansyah", "G3401251002": "Widi Dwi Okta", "G3401251003": "Hafizh Khairan Ramadhan", "G3401251004": "Maharga Tio Febian", "G3401251005": "Atifah Nur Hasanah", "G3401251006": "M. Thoriq Panggih Pratama", "G3401251007": "Marissa Rahma Ekasanti", "G3401251008": "Nayla Sri Ramanda", "G3401251009": "Alisya Savitri", "G3401251010": "Gladys Zahra Saputri", "G3401251011": "Muthia Tasya", "G3401251012": "Fathimah Az Zahra Rizky", "G3401251013": "Ghealatik Biru Putri Nayla Mahyulan", "G3401251014": "Nadiny Fitriani", "G3401251015": "Nadhira Ayudia", "G3401251016": "Yasya Aisyah Hidayatika", "G3401251017": "Sesilia Oktaviora", "G3401251018": "Farah Annisatul Akhyar", "G3401251019": "Muhamad Irfan Nurpallah", "G3401251020": "Tiara Anindia Anjani", "G3401251021": "Zakiyah Azzuhriyah", "G3401251022": "Haura Ahda Sabila", "G3401251023": "Fatur Rohman", "G3401251024": "Hanjani Ghaida Labiqah", "G3401251025": "Tia Nurhasanah", "G3401251026": "Deliana Putri", "G3401251027": "Agnes Monika Hutapea", "G3401251028": "Alayda Sanastri Putri Neviantari", "G3401251029": "Neng Fitroh Fauziah", "G3401251030": "Dena Sesy Novialandra", "G3401251031": "Nurul Azkiya Rahmah", "G3401251032": "Azmi Azalia Dharmawan", "G3401251033": "Syifa Nur Tauhidiyyah ", "G3401251034": "Sascia Mecca", "G3401251035": "Brighita Prabowo", "G3401251036": "Aida Nur Fatimah", "G3401251037": "Janetta Grace Lmahera Hutabarat", "G3401251038": "Risela Alba Rusadi", "G3401251039": "Rofi Kemal Fasya", "G3401251040": "Syarif Satrio Agung", "G3401251041": "Bilqis Islami", "G3401251042": "Ayesha Nayyara Putri Harsoyo", "G3401251043": "Daffa Rizky Oktavian", "G3401251044": "Reva Pebrya Tri Utami", "G3401251046": "Reeza Maulana Pratama", "G3401251047": "Naylatul Rezki Fadillah", "G3401251048": "Zakiyah Nuralfiyani ms", "G3401251049": "Nazwa N", "G3401251050": "Aleesha Tsuraya Iftinan Munir", "G3401251051": "Allya Rhamadhany", "G3401251052": "Rafi Ahmad Fauzan", "G3401251053": "Angelina Gunawan", "G3401251054": "Muhammad Fahmi", "G3401251055": "Tita Handayani", "G3401251056": "Zahra Meina Darmawan", "G3401251057": "Siti Anisa Rahman", "G3401251058": "Nisa Silvia Fitriana", "G3401251060": "Muhamad Farhandhika Darajat", "G3401251061": "Bintang Parsaoran Panjaitan", "G3401251062": "Prosamodra Fitonataqwim", "G3401251063": "Sifana Dewi", "G3401251064": "Intan Suhaimah", "G3401251065": "Nada Shofiah Arisandy", "G3401251066": "Reva Eviriana Ramelan", "G3401251067": "Agdel Chesaria Putrihanny", "G3401251068": "Nabila Syahidah", "G3401251069": "Muhammad Zein Al Faqih", "G3401251070": "Alya Mukhbita", "G3401251071": "Adzra Metami Madina", "G3401251072": "Fahri Muhammad Sapto Pangukuh", "G3401251073": "Rahmania Alyssa Zahra", "G3401251074": "Hasna Mufidah Qurrota A'yunin", "G3401251076": "Aisha Kyrania Radiyanika", "G3401251077": "Stefani Puspa Ayu Wiejaya", "G3401251078": "Ahimsa Kafa Billah", "G3401251079": "Albar Auliazikri", "G3401251080": "Layla Parsa Anggarsari", "G3401251081": "Alma Shofiya", "G3401251082": "Reginia Shakila Prawira", "G3401251083": "Syehranbi Fahrezi", "G3401251084": "Azkia Almasri Nasution", "G3401251085": "Ahmad Azmi Taqiyuddin", "G3401251086": "Gabriella Bathari Widyanti", "G3401251087": "Ulfia Mutmainnah Firdaus", "G3401251088": "Annisa Rachmawati", "G3401251089": "Erintia Rizki Niantika", "G3401251091": "Nadia Davina Azzahra", "G3401251092": "Adesya Putri Anindita", "G3401251093": "Alifah Nisa Nurjanah", "G3401251094": "Elza Salsabella", "G3401251095": "Nailah Shakira Khairunnisa", "G3401251096": "Rassya Febri Humman Al-Ayyubi", "G3401251098": "Muhammad Rofi", "G3401251099": "Shofiyyah", "G3401251101": "Husna Zakiya", "G3401251102": "Muhamad Rullyansyah Ramadhani Carang", "G3401251103": "M. Farhan Al-Fathir", "G3401251105": "Widya Astuti", "G3401251106": "Aulia Regita Ramadhani", "G3401251108": "Syely Savitri Gumilar", "G3401251110": "Alya Nurulsipa", "G3401251111": "Lintang Kamilsari", "G3401251113": "Bimo Nevano Akmal", "G3401251114": "Andari Wiarnova Pandit", "G3401251116": "Alam Prayoga", "G3401251117": "Syaira Nurul Shakinah", "G3401251118": "Ruhul Muhammad", "G3401251119": "Ahmad Faiz Taufiqulhakimfaiz", "G3401251121": "Nadia Fathiya Mumtaz", "G3401251123": "Nabila Nuraini", "G3401251126": "Tania Alya Azizah", "G3401251801": "Reyzita Marchella Riadi", "G3401251803": "Rafi Farrel Mikail" }
+const daftarNIM = Object.keys(dbMahasiswa);
+
+let riwayatPengeluaran = [];
+let statusBayar = {};
+let currentMonth = new Date().getMonth() + 1;
+let isAdmin = false; 
+const adminPass = "bendebio62cantik";
+
+// FUNGSI UMUM & ACCORDION
+function switchTab(tabId, btnElement) {
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+    document.getElementById(tabId).classList.add('active');
+    if(btnElement) btnElement.classList.add('active');
+}
+function toggleAccordion(headerElement) {
+    const content = headerElement.nextElementSibling;
+    headerElement.classList.toggle('active');
+    if (content.classList.contains('open')) {
+        content.style.maxHeight = '0px'; content.classList.remove('open');
+    } else {
+        content.classList.add('open'); content.style.maxHeight = content.scrollHeight + 150 + "px"; 
+    }
+}
+
+// EFEK PETI HARTA KARUN
+let isChestOpen = false;
+function toggleTreasure() {
+    const img = document.getElementById("chestImg");
+    const amt = document.getElementById("treasureAmount");
+    const hint = document.getElementById("chestHint");
+    const container = document.getElementById("particlesContainer");
+
+    if (!isChestOpen) {
+        img.src = "peti/peti_2.png"; // Peti Terbuka
+        amt.classList.add("show");
+        hint.textContent = "Klik peti untuk menutup";
+        
+        // Buat hujan uang
+        for(let i=0; i<12; i++) {
+            let money = document.createElement("div");
+            money.innerHTML = ["💵","💰","🪙","💸","✨"][Math.floor(Math.random()*5)];
+            money.className = "money-particle";
+            let tx = (Math.random() - 0.5) * 250 + "px"; // arah sebaran X
+            let ty = (Math.random() * -150 - 50) + "px"; // arah lompat Y
+            let rot = (Math.random() * 360) + "deg"; // putaran
+            money.style.setProperty('--tx', tx);
+            money.style.setProperty('--ty', ty);
+            money.style.setProperty('--rot', rot);
+            container.appendChild(money);
+            
+            setTimeout(() => money.remove(), 1000); // hilang setelah 1 detik
+        }
+        isChestOpen = true;
+    } else {
+        img.src = "peti/peti_1.png"; // Peti Tertutup
+        amt.classList.remove("show");
+        hint.textContent = "Klik untuk membuka peti!";
+        isChestOpen = false;
+    }
+}
+
+function init() {
+    const v = document.getElementById("bulanSelectView");
+    const f = document.getElementById("bulanSelectForm");
+    v.innerHTML = f.innerHTML; v.value = currentMonth; f.value = currentMonth;
+    if(localStorage.getItem('theme') === 'dark') {
+        document.body.setAttribute('data-theme', 'dark');
+        document.querySelector('.theme-toggle i.fa-moon').className = 'fa-solid fa-sun';
+    }
+    loadDataFromServer();
+    updateCountdown();
+    setInterval(updateCountdown, 1000);
+}
+
+function loadDataFromServer() {
+    showToast("🔄 Menyinkronkan data...", false);
+    fetch(scriptURL).then(r=>r.json()).then(d=>{
+        statusBayar = d; 
+        fetch(scriptURL, { method: 'POST', body: JSON.stringify({ action: "get_pengeluaran" }) })
+        .then(r2=>r2.json()).then(d2=>{
+            riwayatPengeluaran = d2.data || [];
+            renderTable(); updateDashboard(); showToast("✅ Data berhasil dimuat!");
+        }).catch(e=>{
+            renderTable(); updateDashboard(); showToast("⚠️ Data Kas OK, Pengeluaran gagal", true);
+        });
+    }).catch(e=>{console.error(e); showToast("❌ Gagal memuat data", true);});
+}
+
+// LOGIKA TABEL
+function renderTable() {
+    const bulan = document.getElementById("bulanSelectView").value;
+    const filter = document.getElementById("searchBar").value.toLowerCase();
+    const tb = document.getElementById("tableBody");
+    tb.innerHTML = "";
+    if (Object.keys(statusBayar).length === 0) return;
+
+    const deadlineDate = new Date(); deadlineDate.setMonth(bulan, 0); deadlineDate.setHours(23,59,59);
+    const isPastDeadline = (deadlineDate - new Date()) <= 0;
+
+    let matchCount = 0;
+    daftarNIM.forEach((nim, i) => {
+        const data = statusBayar[nim]?.[bulan];
+        const nama = dbMahasiswa[nim] || "Mahasiswa Biologi 62";
+        if (!nim.toLowerCase().includes(filter) && !nama.toLowerCase().includes(filter)) return;
+        matchCount++;
+        
+        let statusBadge = `<span class="badge badge-danger">Belum Bayar</span>`;
+        let metodeText = "-"; let aksiBtn = "";
+
+        if (data?.paid) {
+            statusBadge = `<span class="badge badge-success"><i class="fa-solid fa-check"></i> Lunas</span>`;
+            metodeText = data.metode;
+            aksiBtn = data.bukti ? `<button class="btn-primary btn-small" style="background:none; color:var(--primary); border:none; padding:0; text-decoration:underline;" onclick="openModal('${data.bukti}')">Lihat Bukti</button>` : '';
+            if(isAdmin) aksiBtn += `<br><button class="btn-action btn-reject" onclick="prosesAdmin('${nim}', '${bulan}', 'reject')" style="margin-top:5px;">Batal</button>`;
+        } else if (data?.statusText === "Menunggu Konfirmasi") {
+            statusBadge = `<span class="badge badge-warning"><i class="fa-solid fa-hourglass"></i> Pending</span>`;
+            metodeText = data.metode;
+            let linkBukti = data.bukti ? `<button class="btn-primary btn-small" style="background:none; color:var(--primary); border:none; padding:0; text-decoration:underline; margin-bottom:5px; display:block;" onclick="openModal('${data.bukti}')">Cek Bukti</button>` : '';
+            if (isAdmin) {
+                aksiBtn = `${linkBukti}<div style="display:flex; gap:5px;"><button class="btn-action btn-accept" onclick="prosesAdmin('${nim}', '${bulan}', 'Lunas')"><i class="fa-solid fa-check"></i></button><button class="btn-action btn-reject" onclick="prosesAdmin('${nim}', '${bulan}', 'reject')"><i class="fa-solid fa-xmark"></i></button></div>`;
+            } else aksiBtn = linkBukti;
+        }
+
+        if (!data?.paid && isPastDeadline) { statusBadge += `<br><span class="badge badge-denda"><i class="fa-solid fa-circle-exclamation"></i> + Denda Rp 5.000</span>`; }
+        
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td>${i+1}</td><td><div style="font-weight:600;">${nama}</div><div style="font-size:0.8rem; color:var(--text-gray);">${nim}</div></td><td>${statusBadge}</td><td>${metodeText}</td><td>${aksiBtn}</td>`;
+        tb.appendChild(tr);
+    });
+    if(matchCount===0) tb.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:2rem;">Data tidak ditemukan</td></tr>`;
+}
+
+// LOGIKA DASHBOARD
+function updateDashboard() {
+    const bulanSelect = document.getElementById("bulanSelectView");
+    const bulan = bulanSelect.value;
+    document.getElementById("dashboardMonthDisplay").textContent = bulanSelect.options[bulanSelect.selectedIndex].text;
+    
+    // STATISTIK BULAN INI
+    let paidBulanIni = 0;
+    let uangTerkumpulBulanIni = 0; // Variabel baru untuk menampung nominal dinamis
+
+    daftarNIM.forEach(nim => { 
+        if (statusBayar[nim]?.[bulan]?.paid) {
+            paidBulanIni++; 
+            // Ambil nominal asli dari database, kalau kosong anggap 10000
+            uangTerkumpulBulanIni += Number(statusBayar[nim][bulan].nominal) || 10000;
+        }
+    });
+
+    document.getElementById("totalKasBulanIni").textContent = 'Rp ' + new Intl.NumberFormat('id-ID').format(uangTerkumpulBulanIni);
+    document.getElementById("unpaidCount").textContent = daftarNIM.length - paidBulanIni;
+    const progressPerc = Math.round((paidBulanIni / daftarNIM.length) * 100);
+    document.getElementById("progressBar").style.width = progressPerc + "%";
+    document.getElementById("progressText").textContent = progressPerc + "% Terkumpul";
+
+    // STATISTIK GLOBAL (PETI HARTA)
+    let totalPemasukanGlobal = 0;
+    daftarNIM.forEach(nim => {
+        if (statusBayar[nim]) { 
+            Object.keys(statusBayar[nim]).forEach(bln => { 
+                if (statusBayar[nim][bln].paid) {
+                    // Ambil nominal asli dari database untuk total peti harta karun
+                    totalPemasukanGlobal += Number(statusBayar[nim][bln].nominal) || 10000;
+                }
+            }); 
+        }
+    });
+
+    let totalPengeluaran = 0;
+    riwayatPengeluaran.forEach(item => { totalPengeluaran += item.nominal; });
+    
+    // Update nominal di Harta Karun
+    let saldoSaatIni = totalPemasukanGlobal - totalPengeluaran;
+    document.getElementById("treasureAmount").textContent = 'Rp ' + new Intl.NumberFormat('id-ID').format(saldoSaatIni);
+    document.getElementById("totalPemasukanValue").textContent = 'Rp ' + new Intl.NumberFormat('id-ID').format(totalPemasukanGlobal);
+    document.getElementById("totalPengeluaranValue").textContent = 'Rp ' + new Intl.NumberFormat('id-ID').format(totalPengeluaran);
+
+    renderTabelPengeluaran();
+}
+
+function renderTabelPengeluaran() {
+    const tb = document.getElementById("tabelPengeluaranBody");
+    tb.innerHTML = "";
+    if(riwayatPengeluaran.length === 0) {
+        tb.innerHTML = `<tr><td colspan="3" style="text-align:center; color:var(--text-gray); padding: 1.5rem;">Belum ada pengeluaran kelas</td></tr>`; return;
+    }
+    
+    riwayatPengeluaran.forEach((item) => {
+        let tglRapi = item.tanggal;
+        
+        // Memotong dan merapikan tanggal panjang dari Google Sheets
+        if (tglRapi.includes("GMT") || tglRapi.includes("Waktu")) {
+            let d = new Date(tglRapi);
+            // Ubah format menjadi ex: "18 Feb 2026"
+            tglRapi = d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+        }
+        
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td style="font-size: 0.85rem;">${tglRapi}</td><td style="font-weight: 500;">${item.keterangan}</td><td style="color:var(--danger); font-weight:bold;">- Rp ${new Intl.NumberFormat('id-ID').format(item.nominal)}</td>`;
+        tb.appendChild(tr);
+    });
+}
+
+// ADMIN & PENGELUARAN
+function adminLoginPrompt() {
+    if (isAdmin) {
+        isAdmin = false; showToast("🔒 Logout berhasil"); document.getElementById('adminIcon').className = 'fa-solid fa-lock'; document.getElementById('btnTambahPengeluaran').style.display = 'none';
+    } else {
+        const pass = prompt("Masukkan Password Admin:");
+        if (pass === adminPass) { 
+            isAdmin = true; showToast("🔓 Mode Admin Aktif!"); document.getElementById('adminIcon').className = 'fa-solid fa-lock-open'; document.getElementById('btnTambahPengeluaran').style.display = 'block';
+        } else { showToast("❌ Password salah!", true); }
+    }
+    renderTable();
+}
+
+function bukaModalPengeluaran() { const m = document.getElementById("modalFormPengeluaran"); m.style.display = "flex"; setTimeout(() => m.classList.add("show"), 10); }
+function tutupModalPengeluaran() { const m = document.getElementById("modalFormPengeluaran"); m.classList.remove("show"); setTimeout(() => m.style.display = "none", 300); }
+
+document.getElementById("formInputPengeluaran").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const tglRaw = document.getElementById("tglPengeluaran").value; 
+    const ket = document.getElementById("ketPengeluaran").value;
+    const nom = parseInt(document.getElementById("nomPengeluaran").value);
+    const parts = tglRaw.split("-"); const tglRapi = `${parts[2]}/${parts[1]}/${parts[0]}`;
+    
+    const btn = e.target.querySelector('button');
+    const oriTxt = btn.innerHTML;
+    btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Menyimpan...`;
+    btn.disabled = true;
+
+    fetch(scriptURL, {
+        method: 'POST',
+        body: JSON.stringify({ action: "tambah_pengeluaran", tanggal: tglRapi, keterangan: ket, nominal: nom })
+    }).then(r=>r.json()).then(d=>{
+        if(d.result === "success") {
+            tutupModalPengeluaran(); document.getElementById("formInputPengeluaran").reset(); 
+            loadDataFromServer(); showToast("✅ Pengeluaran tersimpan permanen!");
+        } else { throw new Error(d.message); }
+    }).catch(e=>{ showToast("❌ Error: Gagal menyimpan data", true); })
+    .finally(()=>{ btn.innerHTML = oriTxt; btn.disabled = false; });
+});
+
+function prosesAdmin(nim, bulan, actionStatus) {
+    let inputNominal = ""; 
+
+    if (actionStatus === "Lunas") {
+        // Cek apakah bulan ini masuk kategori telat/denda
+        const deadlineDate = new Date(); 
+        deadlineDate.setMonth(parseInt(bulan), 0);
+        deadlineDate.setHours(23,59,59);
+        const isTelat = (deadlineDate - new Date()) <= 0;
+        
+        if (isTelat) {
+            // HANYA MUNCUL JIKA TELAT (Bisa untuk Cash maupun Transfer)
+            inputNominal = prompt(`⚠️ Mahasiswa ini TELAT bayar.\n\nMasukkan jumlah uang yang diterima (termasuk denda, tanpa titik):`, "15000");
+            
+            if (inputNominal === null) return; // Kalau Zahrah klik Batal
+            
+            inputNominal = parseInt(inputNominal);
+            if (isNaN(inputNominal) || inputNominal < 0) {
+                showToast("⚠️ Nominal tidak valid!", true);
+                return;
+            }
+        } else {
+            // JIKA TEPAT WAKTU, OTOMATIS 10.000 (Zahrah tidak diganggu pop-up)
+            inputNominal = 10000;
+        }
+
+    } else {
+        // Kalau Zahrah klik tombol silang merah (Tolak/Batal)
+        if(!confirm(`Yakin ingin menolak/membatalkan pembayaran ini?`)) return;
+    }
+
+    showToast("⚙️ Memproses...", false);
+    
+    // Siapkan data untuk dikirim ke Google Sheets
+    const payload = { 
+        action: "update_status", 
+        nim: nim, 
+        bulan: bulan, 
+        status: actionStatus,
+        nominal: inputNominal 
+    };
+    
+    fetch(scriptURL, { method: 'POST', body: JSON.stringify(payload) })
+    .then(r => r.json()).then(d => {
+        if(d.result === "success") { showToast("✅ Berhasil diupdate!"); loadDataFromServer(); } else { showToast("❌ Gagal: " + d.message, true); }
+    }).catch(e => { console.error(e); showToast("❌ Error koneksi", true); });
+}
+
+
+// LOGIKA LAINNYA
+function tagihGrupWA() {
+    const bulanVal = document.getElementById("bulanSelectView").value; const bulanName = document.getElementById("bulanSelectView").options[document.getElementById("bulanSelectView").selectedIndex].text;
+    const deadlineDate = new Date(); deadlineDate.setMonth(parseInt(bulanVal), 0); deadlineDate.setHours(23,59,59);
+    const isPastDeadline = (deadlineDate - new Date()) <= 0;
+    let listBelumBayar = [];
+    daftarNIM.forEach((nim, index) => {
+        const data = statusBayar[nim]?.[bulanVal]; const nama = dbMahasiswa[nim] || "Mahasiswa";
+        if (!data || (!data.paid && data.statusText !== "Menunggu Konfirmasi")) { listBelumBayar.push(`${listBelumBayar.length + 1}. ${nama}${isPastDeadline ? " *(+ Denda Rp 5.000)*" : ""}`); }
+    });
+    if(listBelumBayar.length === 0) { showToast("🎉 Semua mahasiswa sudah bayar bulan ini!"); return; }
+    window.open(`https://wa.me/?text=${encodeURIComponent(`*📢 PENGUMUMAN KAS BIOLOGI 62*\n\nBerikut daftar mahasiswa yang *BELUM* melunasi uang kas untuk bulan *${bulanName}*:\n\n` + listBelumBayar.join("\n") + `\n\nTotal: ${listBelumBayar.length} Mahasiswa.\nMohon segera melakukan pembayaran${isPastDeadline ? " beserta dendanya" : ""}. Terima kasih 🙏\n\n_Data per ${new Date().toLocaleDateString('id-ID')}_`)}`, '_blank');
+}
+
+document.getElementById("paymentForm").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const nim = document.getElementById("nim").value.trim(); 
+    const bln = document.getElementById("bulanSelectForm").value;
+    const met = document.getElementById("metode").value; 
+    const file = document.getElementById("bukti").files[0]; 
+    const btn = document.querySelector('.pay-btn');
+    
+    if(!daftarNIM.includes(nim)) { showToast("⚠️ NIM tidak terdaftar!", true); return; }
+    if(met==="Transfer" && !file) { showToast("⚠️ Wajib upload bukti!", true); return; }
+    
+    // --- CEK APAKAH MAHASISWA INI TELAT BAYAR ---
+    const deadlineDate = new Date(); 
+    deadlineDate.setMonth(parseInt(bln), 0); // Hari terakhir bulan tujuan
+    deadlineDate.setHours(23,59,59);
+    const isTelat = (deadlineDate - new Date()) <= 0;
+    
+    const oriTxt = btn.innerHTML; 
+    btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> ${isTelat ? "Memeriksa bukti..." : "Mengirim..."}`; 
+    btn.disabled = true;
+
+    // Hapus pesan error denda lama jika ada
+    const oldErr = document.getElementById("errorDendaBox");
+    if(oldErr) oldErr.remove();
+
+        const send = (b64) => {
+        // Kirim data ke Google Apps Script (tambahkan status cekDenda)
+        fetch(scriptURL, { 
+            method: 'POST', 
+            body: JSON.stringify({ nim, bulan: bln, metode: met, buktiBase64: b64 || null, cekDenda: isTelat }) 
+        })
+        .then(r=>r.json())
+        .then(d=>{ 
+            if(d.result==="success"){ 
+                if (isTelat && met === "Transfer") {
+                    showToast("✅ Bukti Valid! Menunggu konfirmasi bendahara");
+                } else {
+                    showToast("✅ Data Terkirim! Menunggu konfirmasi bendahara");
+                }
+
+                document.getElementById("paymentForm").reset(); 
+                document.getElementById("buktiContainer").style.display="none"; 
+
+                // Berikan jeda 2 detik (2000 milidetik) agar mahasiswa bisa membaca notifikasinya
+                setTimeout(() => {
+                    switchTab('tab-data', document.querySelectorAll('.tab-btn')[2]); 
+                    loadDataFromServer(); 
+                }, 2000);
+            } // <--- INI DIA PENYELAMATNYA (KURUNG TUTUP)
+            else if (d.result === "kurang_bayar") {
+                // Jika AI mendeteksi nominal di struk kurang dari Rp 15.000
+                showToast("❌ Nominal Kurang!", true);
+                
+                // Munculkan peringatan merah di bawah tombol
+                const errBox = document.createElement("div");
+                errBox.id = "errorDendaBox";
+                errBox.style.color = "var(--danger)";
+                errBox.style.marginTop = "15px";
+                errBox.style.padding = "10px";
+                errBox.style.background = "rgba(239, 68, 68, 0.1)";
+                errBox.style.borderRadius = "8px";
+                errBox.style.border = "1px solid var(--danger)";
+                errBox.innerHTML = `⚠️ <b>Bukti ditolak!:</b> Hayoo... ketahuan nih telat bayar kas! karena udah lewat bulan, transfernya harus Rp 15.000 ya (termasuk denda).<br><span style="font-size:1.2rem; font-weight:800; display:block; margin-top:5px;">- Rp 5.000 (Denda belum dibayar)</span>`;
+                
+                btn.parentNode.appendChild(errBox);
+            }
+            else { throw new Error(d.message); } 
+        })
+        .catch(e=>showToast("❌ Error: "+e.message, true))
+        .finally(()=>{ btn.innerHTML=oriTxt; btn.disabled=false; });
+    };
+
+    
+    if(file){ const r=new FileReader(); r.onload=()=>send(r.result); r.readAsDataURL(file); } else send(null);
+});
+
+
+const nimIn = document.getElementById("nim"); const sugBox = document.getElementById("customSuggestions");
+nimIn.addEventListener('input', function() {
+    const v = this.value.toUpperCase(); sugBox.innerHTML = '';
+    if (!v) { sugBox.style.display = 'none'; return; }
+    const m = daftarNIM.filter(n => n.includes(v) || (dbMahasiswa[n]||"").toUpperCase().includes(v));
+    if (m.length > 0) {
+        sugBox.style.display = 'block';
+        m.slice(0, 10).forEach(n => {
+            const d = document.createElement('div'); d.className = 'suggestion-item'; d.innerHTML = `<span>${n}</span> <strong>${dbMahasiswa[n]||"MHS"}</strong>`;
+            d.onclick = () => { nimIn.value = n; document.getElementById("namaDisplay").textContent = dbMahasiswa[n]||""; sugBox.style.display = 'none'; }; sugBox.appendChild(d);
+        });
+    } else sugBox.style.display = 'none';
+});
+document.onclick = (e) => { if (e.target!==nimIn && e.target!==sugBox) sugBox.style.display = 'none'; };
+document.getElementById("metode").onchange = function(){ document.getElementById("buktiContainer").style.display = this.value==="Transfer"?"block":"none"; };
+function toggleTheme() { const d = document.body.getAttribute('data-theme')==='dark'; document.body.setAttribute('data-theme', d?'':'dark'); localStorage.setItem('theme', d?'light':'dark'); document.querySelector('.theme-toggle i.fa-moon, .theme-toggle i.fa-sun').className = d?'fa-solid fa-moon':'fa-solid fa-sun'; }
+function updateCountdown(){ const b = parseInt(document.getElementById("bulanSelectView").value); const d = new Date(); d.setMonth(b, 0); d.setHours(23,59,59); const diff = d - new Date(); document.getElementById("countdownTimer").textContent = diff<=0 ? "Ditutup" : `${Math.floor(diff/86400000)} Hari ${Math.floor((diff/3600000)%24)} Jam`; }
+function showToast(m, e=false){ const t=document.getElementById("toast"); t.textContent=m; t.className="toast show"+(e?" error":""); setTimeout(()=>t.classList.remove("show"),3000); }
+function openModal(src){ const m=document.getElementById("imageModal"); m.style.display="flex"; setTimeout(()=>m.classList.add("show"),10); document.getElementById("img01").src=src; }
+function tutupModalGambar() { const m=document.getElementById("imageModal"); m.classList.remove("show"); setTimeout(() => { m.style.display = "none"; }, 300); }
+function exportToPDF() { showToast("⏳ Menyiapkan PDF...", false); const { jsPDF } = window.jspdf; const doc = new jsPDF(); const bSelect = document.getElementById("bulanSelectView"); const bName = bSelect.options[bSelect.selectedIndex].text; doc.setFontSize(14); doc.text(`Laporan Pembayaran Kas - Bulan ${bName}`, 14, 15); doc.setFontSize(10); doc.setTextColor(100); doc.text(`Dicetak: ${new Date().toLocaleDateString('id-ID')}`, 14, 22); const bodyData = []; const rows = document.getElementById("tableBody").rows; if(rows.length === 1 && rows[0].cells.length === 1) { showToast("⚠️ Tidak ada data untuk diunduh", true); return; } for(let i=0; i<rows.length; i++) { bodyData.push([rows[i].cells[0].innerText, rows[i].cells[1].innerText, rows[i].cells[2].innerText, rows[i].cells[3].innerText]); } doc.autoTable({ startY: 28, head: [['No', 'Nama / NIM', 'Status', 'Metode']], body: bodyData, theme: 'grid', headStyles: { fillColor: [79, 70, 229] }, styles: { font: 'helvetica', fontSize: 9 }, columnStyles: { 0: { cellWidth: 15 }, 1: { cellWidth: 80 }, 2: { cellWidth: 40 }, 3: { cellWidth: 30 } } }); doc.save(`Laporan_Kas_${bName}.pdf`); showToast("✅ PDF diunduh!"); }
+document.getElementById("bulanSelectView").onchange=()=>{renderTable(); updateDashboard(); updateCountdown();}; document.getElementById("searchBar").oninput=renderTable;
+init();
+</script>
+</body>
+</html>
