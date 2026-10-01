@@ -669,7 +669,7 @@ function prosesAdmin(nim, bulan, actionStatus) {
         
         if (isTelat) {
             // HANYA MUNCUL JIKA TELAT (Bisa untuk Cash maupun Transfer)
-            inputNominal = prompt(`⚠️ Mahasiswa ini TELAT bayar.\n\nMasukkan jumlah uang yang diterima (termasuk denda, tanpa titik):`, "15000");
+            inputNominal = prompt(`⚠️ Mahasiswa ini TELAT bayar.\n\nMasukkan jumlah uang yang diterima (termasuk denda, tanpa titik):`, "13000");
             
             if (inputNominal === null) return; // Kalau Zahrah klik Batal
             
@@ -714,7 +714,7 @@ function tagihGrupWA() {
     let listBelumBayar = [];
     daftarNIM.forEach((nim, index) => {
         const data = statusBayar[nim]?.[bulanVal]; const nama = dbMahasiswa[nim] || "Mahasiswa";
-        if (!data || (!data.paid && data.statusText !== "Menunggu Konfirmasi")) { listBelumBayar.push(`${listBelumBayar.length + 1}. ${nama}${isPastDeadline ? " *(+ Denda Rp 5.000)*" : ""}`); }
+        if (!data || (!data.paid && data.statusText !== "Menunggu Konfirmasi")) { listBelumBayar.push(`${listBelumBayar.length + 1}. ${nama}${isPastDeadline ? " *(+ Denda Rp 3.000)*" : ""}`); }
     });
     if(listBelumBayar.length === 0) { showToast("🎉 Semua mahasiswa sudah bayar bulan ini!"); return; }
     window.open(`https://wa.me/?text=${encodeURIComponent(`*📢 PENGUMUMAN KAS BIOLOGI 62*\n\nBerikut daftar mahasiswa yang *BELUM* melunasi uang kas untuk bulan *${bulanName}*:\n\n` + listBelumBayar.join("\n") + `\n\nTotal: ${listBelumBayar.length} Mahasiswa.\nMohon segera melakukan pembayaran${isPastDeadline ? " beserta dendanya" : ""}. Terima kasih 🙏\n\n_Data per ${new Date().toLocaleDateString('id-ID')}_`)}`, '_blank');
