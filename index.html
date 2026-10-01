@@ -536,7 +536,7 @@ function renderTable() {
             } else aksiBtn = linkBukti;
         }
 
-        if (!data?.paid && isPastDeadline) { statusBadge += `<br><span class="badge badge-denda"><i class="fa-solid fa-circle-exclamation"></i> + Denda Rp 5.000</span>`; }
+        if (!data?.paid && isPastDeadline) { statusBadge += `<br><span class="badge badge-denda"><i class="fa-solid fa-circle-exclamation"></i> + Denda Rp 3.000</span>`; }
         
         const tr = document.createElement("tr");
         tr.innerHTML = `<td>${i+1}</td><td><div style="font-weight:600;">${nama}</div><div style="font-size:0.8rem; color:var(--text-gray);">${nim}</div></td><td>${statusBadge}</td><td>${metodeText}</td><td>${aksiBtn}</td>`;
